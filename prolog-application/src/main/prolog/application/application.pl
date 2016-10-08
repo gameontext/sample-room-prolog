@@ -3,13 +3,6 @@
 :- use_module(library(http/websocket)).
 :- use_module(room_protocol).
 
-process("roomHello",_,_,Reply) :-
-    Dest = "roomHello",
-    Reply = "Received roomHello message".
-
-process(WTF,_,_,Reply) :-
-    string_concat("Unknown Destination: ",WTF,Reply).
-
 server(Port) :-
     http_server(http_dispatch, [port(Port)]).
 
@@ -32,9 +25,8 @@ room(WebSocket) :-
     (   Message.opcode == close
 		->  true
 		;
- 		parse(Message.data,D,R,J), !,
-		ws_send(WebSocket, text(D)),
-		process(D,R,J,Reply),
+ 		parse(Message.data,Dest,Recp,Json), !,
+		process(Dest,Recp,Json,Reply),
 		ws_send(WebSocket, text(Reply)),
 		room(WebSocket)
     ).
@@ -42,4 +34,10 @@ room(WebSocket) :-
 welcome(_Request) :-
     format('Content-type: text/plain~n~n'),
     format('Prolog Room Is Up And Running!~n').
+
+process("roomHello",_,_,Reply) :-
+    Reply = "Received roomHello message".
+
+process(WTF,_,_,Reply) :-
+    string_concat("Unknown Destination: ",WTF,Reply).
 
