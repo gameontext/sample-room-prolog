@@ -17,12 +17,21 @@
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/websocket)).
+
+:- use_module(library(http/json)).
+:- use_module(library(http/json_convert)).
+
 :- use_module(room_protocol).
+
 
 server(Port) :-
     http_server(http_dispatch, [port(Port)]).
 
 :- server(8000).
+
+stop :-
+    http_stop_server(8000, []).
+
 
 :- http_handler( /,
 		 welcome,
@@ -42,8 +51,9 @@ room(WebSocket) :-
 		->  true
 		;
  		parse(Message.data,Dest,Recp,Json), !,
-		process(Dest,Recp,Json,Reply),
-		ws_send(WebSocket, text(Reply)),
+		stream_pair(WebSocket,_,Output),
+		process(Dest,Recp,Json,Reply,Output),
+		ws_send(WebSocket,text("")),
 		room(WebSocket)
     ).
 
@@ -51,9 +61,17 @@ welcome(_Request) :-
     format('Content-type: text/plain~n~n'),
     format('Prolog Room Is Up And Running!~n').
 
-process("roomHello",_,_,Reply) :-
-    Reply = "Received roomHello message".
 
-process(WTF,_,_,Reply) :-
+:- json_object
+       point(x:integer, y:integer).
+
+process("roomHello",_,_,Reply,Output) :-
+    prolog_to_json(point(25,50), Reply),
+    write(Output,'player,*,'),
+    json_write(Output,Reply).
+
+
+process(WTF,_,_,Reply,_) :-
     string_concat("Unknown Destination: ",WTF,Reply).
+    
 
