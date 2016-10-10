@@ -45,6 +45,9 @@ init(WebSocket) :-
     ws_send(WebSocket, text('ack,{"version": [1]}')),
     room(WebSocket).
 
+%% intercepting the websokect stream and then
+%% forcing the close, is too hacky.
+%% TODO: Discover correct way and refactor
 room(WebSocket) :-
     ws_receive(WebSocket, Message),
     (   Message.opcode == close
@@ -53,7 +56,7 @@ room(WebSocket) :-
  		parse(Message.data,Dest,Recp,Json), !,
 		stream_pair(WebSocket,_,Output),
 		process(Dest,Recp,Json,Reply,Output),
-		ws_send(WebSocket,text("")),
+		ws_send(WebSocket,text(Reply)),
 		room(WebSocket)
     ).
 
@@ -61,15 +64,23 @@ welcome(_Request) :-
     format('Content-type: text/plain~n~n'),
     format('Prolog Room Is Up And Running!~n').
 
-
-:- json_object
-       point(x:integer, y:integer).
-
-process("roomHello",_,_,Reply,Output) :-
-    prolog_to_json(point(25,50), Reply),
+process("roomHello",_,Json,Reply,Output) :-
+    open_string(Json, JsonStream),
+    json_read_dict(JsonStream,JsonDict),
     write(Output,'player,*,'),
-    json_write(Output,Reply).
-
+    atom_string(Star,"*"),
+    atom_string(UserId,JsonDict.userId),
+    string_concat("Player ",JsonDict.username,S1),
+    string_concat(S1," has entered into the room and started laughing hysterically.",S2),
+    Content_Pairs = [Star-S2,UserId-"You have entered the room"],
+    dict_pairs(Content,_,Content_Pairs),
+    Event = [type-"event",
+	 content-Content,
+	 bookmark-24
+	],
+    dict_pairs(D,_,Event),
+    json_write_dict(Output,D),
+    Reply="".
 
 process(WTF,_,_,Reply,_) :-
     string_concat("Unknown Destination: ",WTF,Reply).
