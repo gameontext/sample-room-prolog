@@ -40,7 +40,7 @@ init(WebSocket) :-
     ws_send(WebSocket, text('ack,{"version": [1]}')),
     room(WebSocket).
 
-%% intercepting the websokect stream and then
+%% intercepting the websocket stream and then
 %% forcing the close, is too hacky.
 %% TODO: Discover correct way and refactor
 room(WebSocket) :-
