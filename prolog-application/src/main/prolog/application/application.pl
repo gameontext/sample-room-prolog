@@ -25,13 +25,8 @@
 
 
 server(Port) :-
-    http_server(http_dispatch, [port(Port)]).
-
-:- server(8000).
-
-stop :-
-    http_stop_server(8000, []).
-
+    http_server(http_dispatch, [port(Port)]),
+    thread_get_message(_).
 
 :- http_handler( /,
 		 welcome,
@@ -71,18 +66,4 @@ process("roomHello",_,Json,Reply,Output) :-
     atom_string(Star,"*"),
     atom_string(UserId,JsonDict.userId),
     string_concat("Player ",JsonDict.username,S1),
-    string_concat(S1," has entered into the room and started laughing hysterically.",S2),
-    Content_Pairs = [Star-S2,UserId-"You have entered the room"],
-    dict_pairs(Content,_,Content_Pairs),
-    Event = [type-"event",
-	 content-Content,
-	 bookmark-24
-	],
-    dict_pairs(D,_,Event),
-    json_write_dict(Output,D),
-    Reply="".
-
-process(WTF,_,_,Reply,_) :-
-    string_concat("Unknown Destination: ",WTF,Reply).
     
-
