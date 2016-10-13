@@ -66,4 +66,18 @@ process("roomHello",_,Json,Reply,Output) :-
     atom_string(Star,"*"),
     atom_string(UserId,JsonDict.userId),
     string_concat("Player ",JsonDict.username,S1),
+    string_concat(S1," has entered into the room and started laughing hysterically.",S2),
+    Content_Pairs = [Star-S2,UserId-"You have entered the very threadbare Prolog Room. Nothing to see (yet)."],
+    dict_pairs(Content,_,Content_Pairs),
+    Event = [type-"event",
+	 content-Content,
+	 bookmark-0 % bookmark functionality not in use
+	],
+    dict_pairs(D,_,Event),
+    json_write_dict(Output,D),
+    Reply="".
+
+process(WTF,_,_,Reply,_) :-
+    string_concat("Unknown Destination: ",WTF,Reply).
     
+
