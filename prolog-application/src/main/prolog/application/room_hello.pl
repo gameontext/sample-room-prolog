@@ -45,7 +45,7 @@ processLocationResponse(JsonDict,Output) :-
     			    commands:_{
     			    		     '/swagger':"swagger about"
     			    		 },
-    			    roomInventory:["a cloud","a rabbit"]
+    			    roomInventory:["cloud","rabbit"]
     			}).
 
 

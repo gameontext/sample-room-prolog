@@ -24,6 +24,21 @@ writePreamble(Output,Direction,UserId) :-
     write(Output,UserId),
     write(Output,",").
 
+processContent("/swagger",JsonDict,Output) :-
+    writePreamble(Output,"player",JsonDict.userId),
+    
+    atom_string(Star,"*"),
+    atom_string(UserId,JsonDict.userId),
+    string_concat(JsonDict.username," swaggers around the room confusing the pair of dictionaries chatting in the corner.",String),
+    Content_Pairs = [Star-String,UserId-"You swagger nonchanlantly about."],
+    dict_pairs(Content,_,Content_Pairs),
+    json_write_dict(Output,
+    		    _{
+    			    type:"event",
+    			    content:Content,
+    			    bookmark:"No bookmarks around here."
+    			}).
+
 processContent("/look",JsonDict,Output) :-
     writePreamble(Output,"player",JsonDict.userId),
     json_write_dict(Output,
@@ -35,7 +50,7 @@ processContent("/look",JsonDict,Output) :-
     			    commands:_{
     			    		     '/swagger':"swagger about"
     			    		 },
-    			    roomInventory:["a cloud","a rabbit"]
+    			    roomInventory:["cloud","rabbit"]
     			}).
 
 
@@ -73,6 +88,33 @@ processContent("/go E",JsonDict,Output) :-
     			    type:"exit",
     			    content:"You exit happily through the Eastern Door, opened for you by politely by Mr Miyagi.",
     			    exitId:"E"
+    			}).
+
+processContent("/inventory",JsonDict,Output) :-
+    writePreamble(Output,"player",JsonDict.userId),
+    json_write_dict(Output,
+    		    _{
+    			    type:"event",
+    			    content:_{'*':"You try and look at you inventory and realise that state does not yet exist, whether inside or outside of this reality. You scream out to the universe in perplexity, and get told by a still quiet voice to be patient, its being looked at soon."},
+    			    bookmark:"Please, next please."
+    			}).
+
+processContent("/examine cloud",JsonDict,Output) :-
+    writePreamble(Output,"player",JsonDict.userId),
+    json_write_dict(Output,
+    		    _{
+    			    type:"event",
+    			    content:_{'*':"You look closely at the cloud, it looks back closely at you."},
+    			    bookmark:"Please, next please."
+    			}).
+
+processContent("/examine rabbit",JsonDict,Output) :-
+    writePreamble(Output,"player",JsonDict.userId),
+    json_write_dict(Output,
+    		    _{
+    			    type:"event",
+    			    content:_{'*':"The rabbit tells you that this room is still a work in progress, and please look at https://github.com/ilanpillemer/gameon-room-prolog for more details and speak to @ilanpillemer"},
+    			    bookmark:"Please, next please."
     			}).
 
 processContent(_,JsonDict,Output) :-
