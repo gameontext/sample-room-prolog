@@ -18,13 +18,29 @@
 :- module(room_command, [processContent/3]).
 
 
-writePreamble(Output,UserId) :-
-    write(Output,"playerLocation,"),
+writePreamble(Output,Direction,UserId) :-
+    write(Output,Direction),
+    write(Output,","),
     write(Output,UserId),
     write(Output,",").
 
+processContent("/look",JsonDict,Output) :-
+    writePreamble(Output,"player",JsonDict.userId),
+    json_write_dict(Output,
+    		    _{
+    			    type:"location",
+    			    name:"A Prolog Room",
+    			    fullName:"A SWI Prolog Room",
+    			    description:"In the centre of the room is a large predicate calculus engine, it is humming an old folk tune whilst listening to the local trade unionist (who is also in the room) explain the benefits of joining the union. There is a happy rabbit chasing tadpoles up the state of the union.",
+    			    commands:_{
+    			    		     '/swagger':"swagger about"
+    			    		 },
+    			    roomInventory:["a cloud","a rabbit"]
+    			}).
+
+
 processContent("/go N",JsonDict,Output) :-
-    writePreamble(Output, JsonDict.userId),
+    writePreamble(Output,"playerLocation",JsonDict.userId),
     json_write_dict(Output,
     		    _{
     			    type:"exit",
@@ -33,7 +49,7 @@ processContent("/go N",JsonDict,Output) :-
     			}).
 
 processContent("/go S",JsonDict,Output) :-
-    writePreamble(Output, JsonDict.userId),
+    writePreamble(Output,"playerLocation",JsonDict.userId),
     json_write_dict(Output,
     		    _{
     			    type:"exit",
@@ -42,7 +58,7 @@ processContent("/go S",JsonDict,Output) :-
     			}).
 
 processContent("/go W",JsonDict,Output) :-
-    writePreamble(Output, JsonDict.userId),
+    writePreamble(Output,"playerLocation",JsonDict.userId),
     json_write_dict(Output,
     		    _{
     			    type:"exit",
@@ -51,7 +67,7 @@ processContent("/go W",JsonDict,Output) :-
     			}).
 
 processContent("/go E",JsonDict,Output) :-
-    writePreamble(Output, JsonDict.userId),
+    writePreamble(Output,"playerLocation",JsonDict.userId),
     json_write_dict(Output,
     		    _{
     			    type:"exit",
