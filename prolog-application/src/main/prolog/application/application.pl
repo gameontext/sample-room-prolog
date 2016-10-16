@@ -17,12 +17,17 @@
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/websocket)).
+
+:- use_module(library(http/json)).
+:- use_module(library(http/json_convert)).
+
 :- use_module(room_protocol).
+:- use_module(room_hello).
+:- use_module(room_command).
 
 server(Port) :-
-    http_server(http_dispatch, [port(Port)]).
-
-:- server(8000).
+    http_server(http_dispatch, [port(Port)]),
+    thread_get_message(_).
 
 :- http_handler( /,
 		 welcome,
@@ -36,14 +41,18 @@ init(WebSocket) :-
     ws_send(WebSocket, text('ack,{"version": [1]}')),
     room(WebSocket).
 
+%% intercepting the websocket stream and then
+%% forcing the close, is too hacky.
+%% TODO: Discover correct way and refactor
 room(WebSocket) :-
     ws_receive(WebSocket, Message),
     (   Message.opcode == close
 		->  true
 		;
  		parse(Message.data,Dest,Recp,Json), !,
-		process(Dest,Recp,Json,Reply),
-		ws_send(WebSocket, text(Reply)),
+		stream_pair(WebSocket,_,Output),
+		process(Dest,Recp,Json,Reply,Output,WebSocket),
+		ws_send(WebSocket,text(Reply)),
 		room(WebSocket)
     ).
 
@@ -51,9 +60,26 @@ welcome(_Request) :-
     format('Content-type: text/plain~n~n'),
     format('Prolog Room Is Up And Running!~n').
 
-process("roomHello",_,_,Reply) :-
-    Reply = "Received roomHello message".
+process("roomHello",_,Json,Reply,Output,WebSocket) :-
+    open_string(Json, JsonStream),
+    json_read_dict(JsonStream,JsonDict),
+    processHelloEvent(JsonDict,Output),
+    ws_send(WebSocket,text("")),
+    processLocationResponse(JsonDict,Output),
+    Reply="".
 
-process(WTF,_,_,Reply) :-
+process("room",_,Json,Reply,Output,_) :-
+    open_string(Json, JsonStream),
+    json_read_dict(JsonStream,JsonDict),
+    processContent(JsonDict.content,JsonDict,Output),
+    Reply="".
+
+
+
+process(WTF,_,_,Reply,_,_) :-
     string_concat("Unknown Destination: ",WTF,Reply).
+
+    
+
+    
 
