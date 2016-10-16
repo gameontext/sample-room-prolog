@@ -47,9 +47,7 @@ processContent("/look",JsonDict,Output) :-
     			    name:"A Prolog Room",
     			    fullName:"A SWI Prolog Room",
     			    description:"In the centre of the room is a large predicate calculus engine, it is humming an old folk tune whilst listening to the local trade unionist (who is also in the room) explain the benefits of joining the union. There is a happy rabbit chasing tadpoles up the state of the union.",
-    			    commands:_{
-    			    		     '/swagger':"swagger about"
-    			    		 },
+    			    commands:_{'/swagger':"swagger about"},
     			    roomInventory:["cloud","rabbit"]
     			}).
 
