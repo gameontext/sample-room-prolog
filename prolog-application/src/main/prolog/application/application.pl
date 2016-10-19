@@ -17,17 +17,15 @@
 :- use_module(library(http/thread_httpd)).
 :- use_module(library(http/http_dispatch)).
 :- use_module(library(http/websocket)).
-
 :- use_module(library(http/json)).
 :- use_module(library(http/json_convert)).
 
 :- use_module(room_protocol).
-:- use_module(room_hello).
 :- use_module(room_command).
 
 server(Port) :-
     http_server(http_dispatch, [port(Port)]),
-    thread_get_message(_).
+    thread_get_message(_). % prevent process from closing
 
 :- http_handler( /,
 		 welcome,
@@ -42,8 +40,7 @@ init(WebSocket) :-
     room(WebSocket).
 
 %% intercepting the websocket stream and then
-%% forcing the close, is too hacky.
-%% TODO: Discover correct way and refactor
+%% forcing the close, 'seems' too hacky.
 room(WebSocket) :-
     ws_receive(WebSocket, Message),
     (   Message.opcode == close
@@ -65,7 +62,7 @@ process("roomHello",_,Json,Reply,Output,WebSocket) :-
     json_read_dict(JsonStream,JsonDict),
     processHelloEvent(JsonDict,Output),
     ws_send(WebSocket,text("")),
-    processLocationResponse(JsonDict,Output),
+    processContent("/look",JsonDict,Output),
     Reply="".
 
 process("room",_,Json,Reply,Output,_) :-
@@ -73,8 +70,6 @@ process("room",_,Json,Reply,Output,_) :-
     json_read_dict(JsonStream,JsonDict),
     processContent(JsonDict.content,JsonDict,Output),
     Reply="".
-
-
 
 process(WTF,_,_,Reply,_,_) :-
     string_concat("Unknown Destination: ",WTF,Reply).

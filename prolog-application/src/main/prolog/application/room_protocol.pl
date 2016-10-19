@@ -15,7 +15,7 @@
  * limitations under the License.
  *******************************************************************************/
 
-:- module(room_protocol, [parse/4]).
+:- module(room_protocol, [parse/4,writePreamble/3]).
 
 parse(String,Dest,Recp,Json) :-
     sub_string(String,S1,_,_, "{"),
@@ -25,3 +25,9 @@ parse(String,Dest,Recp,Json) :-
     sub_string(String,S1,_,0,Json),
     split_string(R1,","," \s\t\n",L),
     L = [Dest,Recp].
+
+writePreamble(Output,Direction,UserId) :-
+    write(Output,Direction),
+    write(Output,","),
+    write(Output,UserId),
+    write(Output,",").
