@@ -22,6 +22,7 @@
 
 :- use_module(room_protocol).
 :- use_module(room_command).
+:- use_module(suite).
 
 server(Port) :-
     http_server(http_dispatch, [port(Port)]),
