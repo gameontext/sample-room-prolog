@@ -36,17 +36,28 @@ processContent("/swagger",JsonDict,Output) :-
     			       bookmark:"not_implemented"
     			   }).
 
+processContent("/move",JsonDict,Output) :-
+    here(somewhere),
+    move(elsewhere),
+    processContent("/look",JsonDict,Output).
+    
+processContent("/move",JsonDict,Output) :-
+    here(elsewhere),
+    move(somewhere),
+    processContent("/look",JsonDict,Output).
+
 processContent("/look",JsonDict,Output) :-
     writePreamble(Output,"player",JsonDict.userId),
+    hereDescription(Description),
+    hereFullname(Fullname),
     json_write_dict(Output,_{
     			       type:"location",
     			       name:"A Prolog Room",
-    			       fullName:"A SWI Prolog Room",
-    			       description:"In the centre of the room is a large predicate calculus engine, it is humming an old folk tune whilst listening to the local trade unionist (who is also in the room) explain the benefits of joining the union. There is a happy rabbit chasing tadpoles up the state of the union.",
-    			       commands:_{'/swagger':"swagger about"},
+    			       fullName:Fullname,
+    			       description:Description,
+    			       commands:_{'/swagger':"swagger about", '/move':"move from somewhere to elsewhere"},
     			       roomInventory:["cloud","rabbit"]
     			   }).
-
 
 processContent("/go N",JsonDict,Output) :-
     writePreamble(Output,"playerLocation",JsonDict.userId),
@@ -129,5 +140,13 @@ processHelloEvent(JsonDict,Output) :-
 			       bookmark:"not_implemented"
 			   }).
 
+hereDescription(Description) :-
+    here(X),
+    atom_string(X,S),
+    string_concat("In the centre of the room is a large predicate calculus engine, it is humming an old folk tune whilst listening to the local trade unionist (who is also in the room) explain the benefits of joining the union. There is a happy rabbit chasing tadpoles up the state of the union. You are currently ", S, Description).
 
-
+hereFullname(D) :-
+    here(X),
+    atom_string(X,S),
+    string_concat("A SWI Prolog Room (",S,S1),
+    string_concat(S1,").",D).
